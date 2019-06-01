@@ -10,3 +10,9 @@ The E4GLCrashRestarter docker image allows you to monitor G-Portal.com BF4 serve
  1. clone the repository
  2. copy crashrestarter.cfg.example to crashrestarter.cfg and edit it
  3. sudo docker-compose up -d
+
+## Updating
+### docker-compose
+ 1. sudo docker-compose down --rmi all
+ 2. git pull
+ 3. sudo docker-compose up -d

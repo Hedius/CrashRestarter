@@ -86,8 +86,8 @@ def monitorServer(gp, webhook, server):
                 time.sleep(900) # cooldown after restart
             else:
                 sendDiscordEmbed(webhook, "Restart", "Restart of server {} failed! "
-                                 "Trying again in 4 minutes!".format(server["ID"]), 16711680)
-        time.sleep(240)
+                                 "Trying again in 3 minutes!".format(server["ID"]), 16711680)
+        time.sleep(180)
 
 
 def startMonitoring(gp, webhook, bf4Servers):
