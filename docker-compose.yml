@@ -1,0 +1,20 @@
+version: '2.4'
+services:
+  E4GLCrashRestarter:
+    container_name: E4GLCrashRestarter
+    build:
+      context: .
+      args:
+        UID: 4000
+        GID: 4000
+    image: hedius/crashrestarter:1.0
+    userns_mode: "host"
+    restart: unless-stopped
+    volumes:
+      - type: bind
+        source: ./crashrestarter.cfg
+        target: /usr/src/app/crashrestarter.cfg
+    security_opt:
+      - no-new-privileges
+    mem_limit: 2G
+    mem_reservation: 1G
