@@ -1,0 +1,19 @@
+[GPortal]
+user=
+pw=
+
+[DiscordWebhook]
+webhook=
+
+[Logging]
+# Debug, Info, Warning, Error, Critical
+loglevel=Debug
+
+# create a section for each server
+[Server1]
+GUID=
+restartURL=
+
+[Server2]
+GUID=
+restartURL=
