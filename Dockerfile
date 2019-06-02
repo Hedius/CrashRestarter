@@ -8,15 +8,15 @@ ARG GID=4000
 
 LABEL maintainer="Hedius @ gitlab.com/hedius" \
       description="image for E4GLCrashRestarter" \
-      version="1.1"
+      version="1.2"
 
 # account for execution of script
 RUN groupadd -r -g $GID  pythonRun && \
     useradd -r -g pythonRun -u $UID pythonRun
 
-WORKDIR /usr/src/app
+COPY --chown=pythonRun:pythonRun src /usr/src/app
 
-COPY --chown=pythonRun:pythonRun src/* ./
+WORKDIR /usr/src/app
 
 # Install dependencies
 RUN pip3 install --no-cache-dir -r requirements.txt
