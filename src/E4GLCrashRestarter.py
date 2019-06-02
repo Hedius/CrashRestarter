@@ -54,15 +54,19 @@ def getServerStatus(server):
     :returns: True if online
               False if stuck/offline
     """
-    r = requests.get("http://battlelog.battlefield.com/bf4/servers/show/pc/{}/"
-                     .format(server["GUID"]))
+    url = "http://battlelog.battlefield.com/bf4/servers/show/pc/{}/".format(server["GUID"])
+    r = requests.get(url)
     if "Sorry, that page doesn't exist" in r.text:
-        log.warning("Battlelog> Server {} with GUID {} is offline! Restart "
-                    "needed!".format(server["ID"], server["GUID"]))
-        return False
-    else:
-        log.debug("Battlelog> Server {} is online".format(server["ID"]))
-        return True
+        log.warning("Battlelog> Server {} with GUID {} is offline! Checking again in 30s!"
+                    .format(server["ID"], server["GUID"]))
+        time.sleep(30)
+        r = requests.get(url)
+        if "Sorry, that page doesn't exist" in r.text:
+            log.warning("Battlelog> Server {} with GUID {} is offline! Restart needed!"
+                        .format(server["ID"], server["GUID"]))
+            return False
+    log.debug("Battlelog> Server {} is online".format(server["ID"]))
+    return True
 
 
 def monitorServer(gp, webhook, server):
@@ -87,7 +91,7 @@ def monitorServer(gp, webhook, server):
             else:
                 sendDiscordEmbed(webhook, "Restart", "Restart of server {} failed! "
                                  "Trying again in 3 minutes!".format(server["ID"]), 16711680)
-        time.sleep(180)
+        time.sleep(300)
 
 
 def startMonitoring(gp, webhook, bf4Servers):
