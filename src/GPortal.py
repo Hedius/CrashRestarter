@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 __author__ = "Hedius"
-__version__ = "1.1"
+__version__ = "1.2"
 __license__ = "GPLv3"
 __status__ = "Production"
 
