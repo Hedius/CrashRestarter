@@ -14,9 +14,9 @@ LABEL maintainer="Hedius @ gitlab.com/hedius" \
 RUN groupadd -r -g $GID  pythonRun && \
     useradd -r -g pythonRun -u $UID pythonRun
 
-WORKDIR /usr/src/app
+COPY --chown=pythonRun:pythonRun src /usr/src/app
 
-COPY --chown=pythonRun:pythonRun src/* ./
+WORKDIR /usr/src/app
 
 # Install dependencies
 RUN pip3 install --no-cache-dir -r requirements.txt
