@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 __author__ = "Hedius"
-__version__ = "1.2"
+__version__ = "1.2.1"
 __license__ = "GPLv3"
 __status__ = "Production"
 
@@ -36,7 +36,7 @@ class GPortal:
             err = "GPortal> Login failed!"
             log.critical(err)
             print(err, file=sys.stderr)
-            exit(2)
+            return False
         log.debug("GPortal> Login successful!")
 
         # restart server
@@ -45,5 +45,5 @@ class GPortal:
             if r.json()["message"] == "Your gameserver is restarting":
                 log.info("GPortal> Successfully restarted server!")
                 return True
-        log.error("GPortal> Restart failed!")
+        log.error("GPortal> Restart failed! Code: {} Error: {}".format(r.status_code, r.text))
         return False

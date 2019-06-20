@@ -16,7 +16,7 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 __author__ = "Hedius"
-__version__ = "1.2"
+__version__ = "1.2.1"
 __license__ = "GPLv3"
 __status__ = "Production"
 
@@ -87,10 +87,11 @@ def monitorServer(gp, webhook, server):
             if gp.restartServer(server["restartURL"]):
                 sendDiscordEmbed(webhook, "Restart", "Successfully restarted server {}."
                                  .format(server["ID"]), 65280)
-                time.sleep(900) # cooldown after restart
+                time.sleep(1200) # cooldown after restart
             else:
                 sendDiscordEmbed(webhook, "Restart", "Restart of server {} failed! "
-                                 "Trying again in 3 minutes!".format(server["ID"]), 16711680)
+                                 "Trying again in 10 minutes!".format(server["ID"]), 16711680)
+                time.sleep(300)
         time.sleep(300)
 
 
