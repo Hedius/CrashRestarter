@@ -7,7 +7,7 @@ services:
       args:
         UID: 4000
         GID: 4000
-    image: registry.gitlab.com/hedius/e4glcrashrestarter:1.2
+    image: registry.gitlab.com/hedius/e4glcrashrestarter:1.2.1
     userns_mode: "host"
     restart: unless-stopped
     volumes:
