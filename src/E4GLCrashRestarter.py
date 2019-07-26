@@ -33,6 +33,7 @@ from discord_webhook import DiscordWebhook, DiscordEmbed
 
 from GPortal import GPortal
 
+
 def sendDiscordEmbed(webhook, title, description, color):
     """
     sends a discord notification
@@ -54,15 +55,18 @@ def getServerStatus(server):
     :returns: True if online
               False if stuck/offline
     """
-    url = "http://battlelog.battlefield.com/bf4/servers/show/pc/{}/".format(server["GUID"])
+    url = ("http://battlelog.battlefield.com/bf4/servers/show/pc/{}/"
+           .format(server["GUID"]))
     r = requests.get(url)
     if "Sorry, that page doesn't exist" in r.text:
-        log.warning("Battlelog> Server {} with GUID {} is offline! Checking again in 30s!"
+        log.warning("Battlelog> Server {} with GUID {} is offline! "
+                    "Checking again in 30s!"
                     .format(server["ID"], server["GUID"]))
         time.sleep(30)
         r = requests.get(url)
         if "Sorry, that page doesn't exist" in r.text:
-            log.warning("Battlelog> Server {} with GUID {} is offline! Restart needed!"
+            log.warning("Battlelog> Server {} with GUID {} is offline! "
+                        "Restart needed!"
                         .format(server["ID"], server["GUID"]))
             return False
     log.debug("Battlelog> Server {} is online".format(server["ID"]))
@@ -80,17 +84,20 @@ def monitorServer(gp, webhook, server):
     log.info("Started monitoring for server {}: {}"
              .format(server["ID"], server["GUID"]))
     while True:
-        if getServerStatus(server) == False:
+        if getServerStatus(server) is False:
             # server down - send disc notification
-            sendDiscordEmbed(webhook, "ALARM! HELP! Server {} down!".format(server["ID"]),
-                             "Restarting server {}!".format(server["GUID"]), 16711680)
+            sendDiscordEmbed(webhook, "ALARM! HELP! Server {} down!"
+                             .format(server["ID"]), "Restarting server {}!"
+                             .format(server["GUID"]), 16711680)
             if gp.restartServer(server["restartURL"]):
-                sendDiscordEmbed(webhook, "Restart", "Successfully restarted server {}."
+                sendDiscordEmbed(webhook, "Restart",
+                                 "Successfully restarted server {}."
                                  .format(server["ID"]), 65280)
-                time.sleep(1200) # cooldown after restart
+                time.sleep(1200)  # cooldown after restart
             else:
-                sendDiscordEmbed(webhook, "Restart", "Restart of server {} failed! "
-                                 "Trying again in 10 minutes!".format(server["ID"]), 16711680)
+                sendDiscordEmbed(webhook, "Restart", "Restart of server {} "
+                                 "failed! Trying again in 10 minutes!"
+                                 .format(server["ID"]), 16711680)
                 time.sleep(300)
         time.sleep(300)
 
@@ -129,8 +136,10 @@ def configLogger(loglevel):
         level = loglevels[loglevel.upper()]
     else:
         level = 10
-    log.basicConfig(format="%(asctime)s | %(levelname)s | %(funcName)s | %(message)s",
+    log.basicConfig(format="%(asctime)s | %(levelname)s | "
+                           "%(funcName)s | %(message)s",
                     level=level)
+
 
 # Config/Argv
 def readConfig(configFile):
@@ -191,9 +200,10 @@ def readConfig(configFile):
 
 
 def main():
-    parser = argparse.ArgumentParser(description="Crash handler for G-Portal BF4 servers by E4GL")
-    parser.add_argument("-c", "--config", help="path to config file", required=True,
-                        dest="configFile")
+    parser = argparse.ArgumentParser(description="Crash handler for G-Portal "
+                                     "BF4 servers by E4GL")
+    parser.add_argument("-c", "--config", help="path to config file",
+                        required=True, dest="configFile")
     args = parser.parse_args()
 
     gp, webhook, bf4Servers = readConfig(args.configFile)
@@ -203,5 +213,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-
-

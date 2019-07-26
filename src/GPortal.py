@@ -8,6 +8,7 @@ import sys
 import requests
 import logging as log
 
+
 class GPortal:
     """connector for G-Portal.com"""
     def __init__(self, user, pw):
@@ -18,7 +19,6 @@ class GPortal:
         """
         self.user = user
         self.pw = pw
-
 
     def restartServer(self, restartURL):
         """
@@ -41,9 +41,10 @@ class GPortal:
 
         # restart server
         r = s.get(restartURL)
-        if r.status_code is 200:
+        if r.status_code == 200:
             if r.json()["message"] == "Your gameserver is restarting":
                 log.info("GPortal> Successfully restarted server!")
                 return True
-        log.error("GPortal> Restart failed! Code: {} Error: {}".format(r.status_code, r.text))
+        log.error("GPortal> Restart failed! Code: {} Error: {}"
+                  .format(r.status_code, r.text))
         return False
