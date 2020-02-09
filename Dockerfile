@@ -8,7 +8,7 @@ ARG GID=4000
 
 LABEL maintainer="Hedius @ gitlab.com/hedius" \
       description="image for E4GLCrashRestarter" \
-      version="1.2.1"
+      version="1.2.2"
 
 # account for execution of script
 RUN groupadd -r -g $GID  pythonRun && \

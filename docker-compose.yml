@@ -7,7 +7,7 @@ services:
       args:
         UID: 4000
         GID: 4000
-    image: registry.gitlab.com/hedius/e4glcrashrestarter:1.2.1
+    image: registry.gitlab.com/hedius/e4glcrashrestarter:1.2.2
     userns_mode: "host"
     restart: unless-stopped
     volumes:
@@ -16,5 +16,5 @@ services:
         target: /usr/src/app/crashrestarter.cfg
     security_opt:
       - no-new-privileges
-    mem_limit: 2G
-    mem_reservation: 1G
+    mem_limit: 500M
+    mem_reservation: 400M
