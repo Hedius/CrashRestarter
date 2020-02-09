@@ -30,7 +30,7 @@ import logging as log
 import requests
 from discord_webhook import DiscordWebhook, DiscordEmbed
 
-from .GPortal import GPortal
+from src.GPortal import GPortal
 
 
 def send_discord_embed(webhook, title, description, color):
