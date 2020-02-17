@@ -85,7 +85,7 @@ def monitor_server(gp, webhook, server):
             send_discord_embed(webhook, "ALARM! HELP! Server {} down!"
                                .format(server["ID"]), "Restarting server {}!"
                                .format(server["GUID"]), 16711680)
-            if gp.restartServer(server["restartURL"]):
+            if gp.restart_server(server["restartURL"]):
                 send_discord_embed(webhook, "Restart",
                                    "Successfully restarted server {}."
                                    .format(server["ID"]), 65280)
