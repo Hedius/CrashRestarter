@@ -1,3 +1,5 @@
+# NOT MAINTAINED - THIS PROJECT REACHED EOL!
+
 # E4GL Crash Restarter
 The E4GL Crash Restarter docker image allows you to monitor G-Portal.com BF4 servers and restarts them if needed.
 
