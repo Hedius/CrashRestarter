@@ -40,6 +40,8 @@ def send_discord_embed(webhook, title, description, color):
     :param description: content of msg
     :param color: color of msg
     """
+    if not webhook or len(webhook):
+        return
     discord = DiscordWebhook(url=webhook)
     embed = DiscordEmbed(title=title, description=description, color=color)
     discord.add_embed(embed)
@@ -82,14 +84,10 @@ def monitor_server(gp, webhook, server):
     while True:
         if get_server_status(server) is False:
             # server down - send disc notification
-            if webhook and webhook != "":
-                send_discord_embed(webhook, "ALARM! HELP! Server {} down!"
-                                   .format(server["ID"]), "Restarting server {}!"
-                                   .format(server["GUID"]), 16711680)
+            send_discord_embed(webhook, "ALARM! HELP! Server {} down!"
+                               .format(server["ID"]), "Restarting server {}!"
+                               .format(server["GUID"]), 16711680)
             restart = gp.restart_server(server["restartURL"])
-            if not webhook or webhook == "":
-                time.sleep(600)
-                continue
             if restart:
                 send_discord_embed(webhook, "Restart",
                                    "Successfully restarted server {}."
