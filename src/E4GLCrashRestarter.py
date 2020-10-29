@@ -95,8 +95,8 @@ def monitor_server(gp, webhook, server):
                 send_discord_embed(webhook, "Restart", "Restart of server {} "
                                                        "failed! Trying again in 10 minutes!"
                                    .format(server["ID"]), 16711680)
-                time.sleep(300)
-        time.sleep(300)
+                time.sleep(600)
+        time.sleep(240)
 
 
 def start_monitoring(gp, webhook, bf4_servers):
