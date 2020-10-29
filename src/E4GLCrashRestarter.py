@@ -40,7 +40,7 @@ def send_discord_embed(webhook, title, description, color):
     :param description: content of msg
     :param color: color of msg
     """
-    if not webhook or len(webhook):
+    if not webhook or len(webhook) == 0:
         return
     discord = DiscordWebhook(url=webhook)
     embed = DiscordEmbed(title=title, description=description, color=color)
@@ -57,6 +57,7 @@ def get_server_status(server):
     url = ("http://battlelog.battlefield.com/bf4/servers/show/pc/{}/"
            .format(server["GUID"]))
     r = requests.get(url)
+    # Todo: why do we not check the status code? tbh battlelog should return 404
     if "Sorry, that page doesn't exist" in r.text:
         log.warning("Battlelog> Server {} with GUID {} is offline! "
                     "Checking again in 30s!"
@@ -73,8 +74,8 @@ def get_server_status(server):
 
 
 def monitor_server(gp, webhook, server):
-    """Check the status of a server every 5 minutes and restarts the server if it
-    is down
+    """Check the status of a server every 5 minutes and restarts the server if
+    it is down.
     :param gp: object of class GPortal
     :param webhook: url
     :param server: datadict of server
@@ -92,13 +93,13 @@ def monitor_server(gp, webhook, server):
                 send_discord_embed(webhook, "Restart",
                                    "Successfully restarted server {}."
                                    .format(server["ID"]), 65280)
-                time.sleep(600)  # cooldown after restart
             else:
-                send_discord_embed(webhook, "Restart", "Restart of server {} "
-                                                       "failed! Trying again in 10 minutes!"
+                send_discord_embed(webhook, "Restart",
+                                   "Restart of server {} failed! Trying again "
+                                   "in 10 minutes!"
                                    .format(server["ID"]), 16711680)
-                time.sleep(600)
-        time.sleep(240)
+            time.sleep(600)  # cooldown after restart
+        time.sleep(200)
 
 
 def start_monitoring(gp, webhook, bf4_servers):
