@@ -86,11 +86,14 @@ def monitor_server(gp, webhook, server):
                 send_discord_embed(webhook, "ALARM! HELP! Server {} down!"
                                    .format(server["ID"]), "Restarting server {}!"
                                    .format(server["GUID"]), 16711680)
-            if gp.restart_server(server["restartURL"]):
+            restart = gp.restart_server(server["restartURL"])
+            if not webhook or webhook == "":
+                continue
+            if restart:
                 send_discord_embed(webhook, "Restart",
                                    "Successfully restarted server {}."
                                    .format(server["ID"]), 65280)
-                time.sleep(1200)  # cooldown after restart
+                time.sleep(600)  # cooldown after restart
             else:
                 send_discord_embed(webhook, "Restart", "Restart of server {} "
                                                        "failed! Trying again in 10 minutes!"
