@@ -60,9 +60,10 @@ def get_server_status(server):
     # Todo: why do we not check the status code? tbh battlelog should return 404
     if "Sorry, that page doesn't exist" in r.text:
         log.warning("Battlelog> Server {} with GUID {} is offline! "
-                    "Checking again in 30s!"
+                    "Checking again in 45s!"
                     .format(server["ID"], server["GUID"]))
 
+        time.sleep(45)
         r = requests.get(url)
         if "Sorry, that page doesn't exist" in r.text:
             log.warning("Battlelog> Server {} with GUID {} is offline! "
@@ -93,13 +94,14 @@ def monitor_server(gp, webhook, server):
                 send_discord_embed(webhook, "Restart",
                                    "Successfully restarted server {}."
                                    .format(server["ID"]), 65280)
+                # time.sleep(180)
             else:
                 send_discord_embed(webhook, "Restart",
                                    "Restart of server {} failed! Trying again "
                                    "in 10 minutes!"
                                    .format(server["ID"]), 16711680)
-            time.sleep(600)  # cooldown after restart
-        time.sleep(200)
+                time.sleep(800)  # cooldown after restart
+        time.sleep(180)
 
 
 def start_monitoring(gp, webhook, bf4_servers):
