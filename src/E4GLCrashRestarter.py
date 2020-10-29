@@ -88,6 +88,7 @@ def monitor_server(gp, webhook, server):
                                    .format(server["GUID"]), 16711680)
             restart = gp.restart_server(server["restartURL"])
             if not webhook or webhook == "":
+                time.sleep(600)
                 continue
             if restart:
                 send_discord_embed(webhook, "Restart",
