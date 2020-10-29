@@ -13,7 +13,7 @@ loglevel=Debug
 # create a section for each server
 [Server1]
 GUID=
-restartURL=
+restartURL=https://www.g-portal.com/eur/server/bf4/xxxx/restartService
 
 # [Server2]
 # GUID=
