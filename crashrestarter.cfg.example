@@ -8,7 +8,7 @@ webhook=
 
 [Logging]
 # Debug, Info, Warning, Error, Critical
-loglevel=Debug
+loglevel=Info
 
 # create a section for each server
 [Server1]
