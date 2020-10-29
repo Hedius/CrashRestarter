@@ -1,5 +1,3 @@
-# NOT MAINTAINED - THIS PROJECT HAS REACHED ITS EOL!
-
 # E4GL Crash Restarter
 The E4GL Crash Restarter docker image allows you to monitor G-Portal.com BF4 servers and restarts them if needed.
 
@@ -11,6 +9,7 @@ The E4GL Crash Restarter docker image allows you to monitor G-Portal.com BF4 ser
 ### docker-compose
  1. clone the repository
  2. copy crashrestarter.cfg.example to crashrestarter.cfg and edit it
+    1. leave the webhook setting empty if you do not want to use it
  3. sudo docker-compose up -d
 
 ## Updating

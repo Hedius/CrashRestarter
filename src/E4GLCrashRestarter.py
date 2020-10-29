@@ -59,7 +59,7 @@ def get_server_status(server):
         log.warning("Battlelog> Server {} with GUID {} is offline! "
                     "Checking again in 30s!"
                     .format(server["ID"], server["GUID"]))
-        time.sleep(30)
+
         r = requests.get(url)
         if "Sorry, that page doesn't exist" in r.text:
             log.warning("Battlelog> Server {} with GUID {} is offline! "
@@ -82,9 +82,10 @@ def monitor_server(gp, webhook, server):
     while True:
         if get_server_status(server) is False:
             # server down - send disc notification
-            send_discord_embed(webhook, "ALARM! HELP! Server {} down!"
-                               .format(server["ID"]), "Restarting server {}!"
-                               .format(server["GUID"]), 16711680)
+            if webhook and webhook != "":
+                send_discord_embed(webhook, "ALARM! HELP! Server {} down!"
+                                   .format(server["ID"]), "Restarting server {}!"
+                                   .format(server["GUID"]), 16711680)
             if gp.restart_server(server["restartURL"]):
                 send_discord_embed(webhook, "Restart",
                                    "Successfully restarted server {}."

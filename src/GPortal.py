@@ -39,14 +39,16 @@ class GPortal:
                   False on failure
         """
         # login
-        data = {'_method': 'POST', 'login': self.user, 'password': self.pw}
+        data = {'login': self.user, 'password': self.pw}
         s = requests.session()
         # s.post("https://id2.g-portal.com/login", data=data)
-        # r = s.get("https://id2.g-portal.com/goto/www.g-portal.com")
-        r = s.post("https://id2.g-portal.com/login?continue=1&redirect=https%3A%2F%2Fwww.g-portal.com%2Fen"
-                   "%2Fgportalid%2Flogin%3FredirectAfterLogin%3Dhttps%253A%252F%252Fwww.g-portal.com%252F",
-                   data=data)
-        if "My Servers" not in r.text:
+        s.headers['User-Agent'] = "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:82.0) Gecko/20100101 Firefox/82.0"
+        r = s.get("https://www.g-portal.com/en/")
+        r = s.get("https://www.g-portal.com/eur/auth/login?redirectAfterLogin=%2F")
+        r = s.post(
+            "https://id2.g-portal.com/login?redirect=https%3A%2F%2Fwww.g-portal.com%2F%3AregionPrefix%2Fauth%2Flogin%3FredirectAfterLogin%3D%252F%26defaultRegion%3DEU",
+            data=data)
+        if self.user not in r.text:
             err = "GPortal> Login failed!"
             log.critical(err)
             print(err, file=sys.stderr)
