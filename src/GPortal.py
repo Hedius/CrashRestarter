@@ -48,7 +48,7 @@ class GPortal:
         r = s.post(
             "https://id2.g-portal.com/login?redirect=https%3A%2F%2Fwww.g-portal.com%2F%3AregionPrefix%2Fauth%2Flogin%3FredirectAfterLogin%3D%252F%26defaultRegion%3DEU",
             data=data)
-        if self.user not in r.text:
+        if "<title>Auth</title>" in r.text:
             err = "GPortal> Login failed!"
             log.critical(err)
             print(err, file=sys.stderr)
