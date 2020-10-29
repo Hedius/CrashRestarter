@@ -81,8 +81,8 @@ def get_server_status(server):
             if name not in (server["NAME"], server["GUID"]):
                 server["NAME"] = name
         except (KeyError, TypeError):
-            return server["name"]
-        return server["name"]
+            pass
+        return server["NAME"]
 
     if check_server() is False:
         log.warning("Battlelog> Server {} with name/GUID {} is offline! "
@@ -214,6 +214,11 @@ def read_config(config_file):
     try:
         while config.has_section("Server" + str(i)):
             section = config["Server" + str(i)]
+
+            if "restart" not in section["restartURL"]:
+                print("Invalid RestarURL for server {}!".format(i))
+                exit(1)
+
             new_dict = {
                 "NAME": section["GUID"],
                 "ID": i,
