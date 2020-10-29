@@ -43,10 +43,11 @@ restartURL=
  3. sudo docker-compose up -d
  
  ### manual
+ 1. switch to the src folder
  2. Install the requirements with `pip3 install --user -r requirements.txt`
- 2. copy crashrestarter.cfg.example to src/crashrestarter.cfg and edit it
+ 3. copy crashrestarter.cfg.example to src/crashrestarter.cfg and edit it
     1. leave the webhook setting empty if you do not want to use it
- 3. `python3 E4GLCrashRestarter.py -c crashrestarter.cfg`
+ 4. `python3 E4GLCrashRestarter.py -c crashrestarter.cfg`
 
 ## Updating
 ### docker-compose
