@@ -1,4 +1,5 @@
 src/__pycache__/*
 src/crashrestarter.cfg
+crashrestarter.cfg
 crashrestarter.log
 venv/*

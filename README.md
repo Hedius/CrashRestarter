@@ -31,9 +31,9 @@ loglevel=Debug
 GUID=
 restartURL=
 
-[Server2]
-GUID=
-restartURL=
+# [Server2]
+# GUID=
+# restartURL=
 ```
 
 ### docker-compose
