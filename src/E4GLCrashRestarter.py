@@ -57,7 +57,21 @@ def get_server_status(server):
               False if stuck/offline
     """
 
-    def extract_server_name():
+    def check_server():
+        """
+        Return False if the server is offline else true
+        :returns: boolean
+        """
+        url = ("http://battlelog.battlefield.com/bf4/servers/show/pc/{}/?json=1"
+               .format(server["GUID"]))
+        r = requests.get(url)
+        data = r.json()
+        if r.status_code > 400 and data["type"] == "error" and "SERVER_INFO_NOT_FOUND" in data["message"]:
+            return False
+        extract_server_name(data)
+        return True
+
+    def extract_server_name(data):
         """
         Extracts and saves the server name in the server Dict.
         :returns: server name
@@ -70,24 +84,18 @@ def get_server_status(server):
             return server["name"]
         return server["name"]
 
-    url = ("http://battlelog.battlefield.com/bf4/servers/show/pc/{}/?json=1"
-           .format(server["GUID"]))
-    r = requests.get(url)
-    data = r.json()
-    if data != "success":
+    if check_server() is False:
         log.warning("Battlelog> Server {} with name/GUID {} is offline! "
                     "Checking again in 45s!"
                     .format(server["ID"], server["NAME"]))
         time.sleep(45)
-        r = requests.get(url)
-        if "Sorry, that page doesn't exist" in r.text:
+        if check_server() is False:
             log.warning("Battlelog> Server {} with name/GUID {} is offline! "
                         "Restart needed!"
                         .format(server["ID"], server["NAME"]))
             return False
     log.debug("Battlelog> Server {} with name/guid {} is online"
               .format(server["ID"], server["NAME"]))
-    name = extract_server_name()
     return True
 
 
