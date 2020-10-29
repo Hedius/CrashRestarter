@@ -34,7 +34,8 @@ from GPortal import GPortal
 
 
 def send_discord_embed(webhook, title, description, color):
-    """Send a discord notification
+    """
+    Send a discord notification
     :param webhook: url
     :param title: title of msg
     :param description: content of msg
@@ -49,33 +50,48 @@ def send_discord_embed(webhook, title, description, color):
 
 
 def get_server_status(server):
-    """Ask Battlelog for the status of the given server
+    """
+    Ask Battlelog for the status of the given server
     :param server: datadict of server
     :returns: True if online
               False if stuck/offline
     """
-    url = ("http://battlelog.battlefield.com/bf4/servers/show/pc/{}/"
+
+    def extract_server_name():
+        """
+        Extracts and saves the server name in the server Dict.
+        :returns: server name
+        """
+        try:
+            server["name"] = data["message"]["SERVER_INFO"]["name"]
+        except KeyError:
+            server["name"] = server["GUID"]
+        return server["name"]
+
+    url = ("http://battlelog.battlefield.com/bf4/servers/show/pc/{}/?json=1"
            .format(server["GUID"]))
     r = requests.get(url)
-    # Todo: why do we not check the status code? tbh battlelog should return 404
-    if "Sorry, that page doesn't exist" in r.text:
-        log.warning("Battlelog> Server {} with GUID {} is offline! "
+    data = r.json()
+    name = extract_server_name()
+    if data != "success":
+        log.warning("Battlelog> Server {} with name/GUID {} is offline! "
                     "Checking again in 45s!"
-                    .format(server["ID"], server["GUID"]))
-
+                    .format(server["ID"], name))
         time.sleep(45)
         r = requests.get(url)
         if "Sorry, that page doesn't exist" in r.text:
-            log.warning("Battlelog> Server {} with GUID {} is offline! "
+            log.warning("Battlelog> Server {} with name/GUID {} is offline! "
                         "Restart needed!"
-                        .format(server["ID"], server["GUID"]))
+                        .format(server["ID"], name))
             return False
-    log.debug("Battlelog> Server {} is online".format(server["ID"]))
+    log.debug("Battlelog> Server {} with name/guid {} is online"
+              .format(server["ID"], name))
     return True
 
 
 def monitor_server(gp, webhook, server):
-    """Check the status of a server every 5 minutes and restarts the server if
+    """
+    Check the status of a server every 5 minutes and restarts the server if
     it is down.
     :param gp: object of class GPortal
     :param webhook: url
@@ -88,24 +104,25 @@ def monitor_server(gp, webhook, server):
             # server down - send disc notification
             send_discord_embed(webhook, "ALARM! HELP! Server {} down!"
                                .format(server["ID"]), "Restarting server {}!"
-                               .format(server["GUID"]), 16711680)
+                               .format(server["name"]), 16711680)
             restart = gp.restart_server(server["restartURL"])
             if restart:
                 send_discord_embed(webhook, "Restart",
                                    "Successfully restarted server {}."
-                                   .format(server["ID"]), 65280)
+                                   .format(server["name"]), 65280)
                 # time.sleep(180)
             else:
                 send_discord_embed(webhook, "Restart",
                                    "Restart of server {} failed! Trying again "
                                    "in 10 minutes!"
-                                   .format(server["ID"]), 16711680)
+                                   .format(server["name"]), 16711680)
                 time.sleep(800)  # cooldown after restart
         time.sleep(180)
 
 
 def start_monitoring(gp, webhook, bf4_servers):
-    """Start a thread for each server to monitor
+    """
+    Start a thread for each server to monitor
     :param gp: object of class GPortal
     :param webhook: url
     :param bf4_servers: list containing all datadicts of servers
@@ -121,7 +138,8 @@ def start_monitoring(gp, webhook, bf4_servers):
 
 
 def config_logging(log_level):
-    """Configure the logger
+    """
+    Configure the logger
     :param log_level: loglevel as string
     """
     log_levels = {
@@ -143,7 +161,8 @@ def config_logging(log_level):
 
 # Config/Argv
 def read_config(config_file):
-    """Read the config and connection data from the given config file
+    """
+    Read the config and connection data from the given config file
     :param config_file: path to config file
     :returns: connection socket for G-Portal (object)
               url of DiscordWebhook
