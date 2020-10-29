@@ -63,29 +63,31 @@ def get_server_status(server):
         :returns: server name
         """
         try:
-            server["name"] = data["message"]["SERVER_INFO"]["name"]
-        except KeyError:
-            server["name"] = server["GUID"]
+            name = data["message"]["SERVER_INFO"]["name"]
+            if name not in (server["NAME"], server["GUID"]):
+                server["NAME"] = name
+        except (KeyError, TypeError):
+            return server["name"]
         return server["name"]
 
     url = ("http://battlelog.battlefield.com/bf4/servers/show/pc/{}/?json=1"
            .format(server["GUID"]))
     r = requests.get(url)
     data = r.json()
-    name = extract_server_name()
     if data != "success":
         log.warning("Battlelog> Server {} with name/GUID {} is offline! "
                     "Checking again in 45s!"
-                    .format(server["ID"], name))
+                    .format(server["ID"], server["NAME"]))
         time.sleep(45)
         r = requests.get(url)
         if "Sorry, that page doesn't exist" in r.text:
             log.warning("Battlelog> Server {} with name/GUID {} is offline! "
                         "Restart needed!"
-                        .format(server["ID"], name))
+                        .format(server["ID"], server["NAME"]))
             return False
     log.debug("Battlelog> Server {} with name/guid {} is online"
-              .format(server["ID"], name))
+              .format(server["ID"], server["NAME"]))
+    name = extract_server_name()
     return True
 
 
@@ -104,18 +106,18 @@ def monitor_server(gp, webhook, server):
             # server down - send disc notification
             send_discord_embed(webhook, "ALARM! HELP! Server {} down!"
                                .format(server["ID"]), "Restarting server {}!"
-                               .format(server["name"]), 16711680)
+                               .format(server["NAME"]), 16711680)
             restart = gp.restart_server(server["restartURL"])
             if restart:
                 send_discord_embed(webhook, "Restart",
                                    "Successfully restarted server {}."
-                                   .format(server["name"]), 65280)
+                                   .format(server["NAME"]), 65280)
                 # time.sleep(180)
             else:
                 send_discord_embed(webhook, "Restart",
                                    "Restart of server {} failed! Trying again "
                                    "in 10 minutes!"
-                                   .format(server["name"]), 16711680)
+                                   .format(server["NAME"]), 16711680)
                 time.sleep(800)  # cooldown after restart
         time.sleep(180)
 
@@ -204,12 +206,13 @@ def read_config(config_file):
     try:
         while config.has_section("Server" + str(i)):
             section = config["Server" + str(i)]
-            newdict = {
-                'ID': i,
-                'GUID': section["GUID"],
-                'restartURL': section["restartURL"]
+            new_dict = {
+                "NAME": section["GUID"],
+                "ID": i,
+                "GUID": section["GUID"],
+                "restartURL": section["restartURL"]
             }
-            bf4_servers.append(newdict)
+            bf4_servers.append(new_dict)
             i += 1
     except (configparser.Error, KeyError):
         print("Error while reading BF4 servers from config!", file=sys.stderr)
