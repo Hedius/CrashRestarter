@@ -113,7 +113,7 @@ def monitor_server(gp, webhook, server):
         if get_server_status(server) is False:
             # server down - send disc notification
             send_discord_embed(webhook, "ALARM! Server {} down!"
-                               .format(server["ID"]), "Restarting server\n**{}**!"
+                               .format(server["ID"]), "**{}**"
                                .format(server["NAME"]), 16711680)
             restart = gp.restart_server(server["restartURL"])
             if restart:
