@@ -9,10 +9,12 @@ The E4GL Crash Restarter docker image allows you to monitor G-Portal.com BF4 ser
 ### Get the restart URL of your server
 Copy the url of the restart button.
 
-![Restart URL](https://i.imgur.com/sNvMgma.png "Restart URL")
+![Restart URL](https://i.imgur.com/3QMdCk4.png "Restart URL")
 
 ### Config
-Copy the example config to crashrestarter.cfg.
+Copy the example config to crashrestarter.cfg and edit it.
+
+**The crashrestarter.cfg has to be in the root folder of the report!**
 ```
 [GPortal]
 user=
@@ -40,17 +42,18 @@ restartURL=
  1. clone the repository
  2. copy crashrestarter.cfg.example to crashrestarter.cfg and edit it
     1. leave the webhook setting empty if you do not want to use it
- 3. sudo docker-compose up -d
+ 3. make docker
  
- ### manual
- 1. switch to the src folder
- 2. Install the requirements with `pip3 install --user -r requirements.txt`
- 3. copy crashrestarter.cfg.example to src/crashrestarter.cfg and edit it
+ ### Directly on machine
+ 2. Install the requirements with `make install`
+ 3. copy crashrestarter.cfg.example to crashrestarter.cfg and edit it
     1. leave the webhook setting empty if you do not want to use it
- 4. `python3 E4GLCrashRestarter.py -c crashrestarter.cfg`
+ 4. Start the script: `make start`
 
 ## Updating
-### docker-compose
- 1. sudo docker-compose down --rmi all
- 2. git pull
- 3. sudo docker-compose up -d
+ ### docker-compose
+ `make update-docker`
+
+ ### Directly on machine
+ 1. End the script
+ 2. Update and start it again with `make start`
