@@ -7,6 +7,8 @@ flake8:
   stage: Code Quality
   only:
     - schedules
+  tags:
+    - docker
   script:
     - python -m pip install flake8
     - flake8 src
@@ -15,6 +17,8 @@ Pylama:
   stage: Code Quality
   only:
     - schedules
+  tags:
+    - docker
   script:
     - python -m pip install pylama
     - pylama src
