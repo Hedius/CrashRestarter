@@ -1,0 +1,20 @@
+image: python:3
+
+stages:
+  - Code Quality
+
+flake8:
+  stage: Code Quality
+  only:
+    - schedules
+  script:
+    - python -m pip install flake8
+    - flake8 src
+
+Pylama:
+  stage: Code Quality
+  only:
+    - schedules
+  script:
+    - python -m pip install pylama
+    - pylama src
