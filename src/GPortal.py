@@ -21,7 +21,6 @@ from loguru import logger
 from selenium import webdriver
 from selenium.webdriver.common.by import By
 
-_lock = Lock()
 
 class GPortal:
     """
@@ -40,6 +39,8 @@ class GPortal:
         self._user = user
         self._pw = pw
         self._remote_selenium = remote_selenium
+
+        self._lock = Lock()
 
         self._driver = self._init_driver()
 
@@ -81,7 +82,7 @@ class GPortal:
                 'div.cf1lHZ:nth-child(1) > button:nth-child(1)'
             ).click()
             logger.info('Clicked the cookie button')
-        except:
+        except Exception:
             pass
 
     def restart_server(self, restart_url):
@@ -91,6 +92,9 @@ class GPortal:
         """
         # Mutex to prevent several threads from doing the same stuff at the same time.
         # selenium would support multiple sessions but we only use one
-        with _lock:
+        with self._lock:
             self._check_login()
             self._driver.get(restart_url)
+
+            if 'auth.g-portal.com' in self._driver.current_url:
+                raise RuntimeError('LOGIN FAILED!!! = RESTART FAILED!')

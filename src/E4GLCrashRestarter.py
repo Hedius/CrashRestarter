@@ -59,7 +59,9 @@ def check_battlelog(server):
     url = f'http://battlelog.battlefield.com/bf4/servers/show/pc/{server["GUID"]}/?json=1'
     r = requests.get(url)
     data = r.json()
-    if r.status_code > 400 and data['type'] == 'error' and 'SERVER_INFO_NOT_FOUND' in data['message']:
+    if (r.status_code > 400
+            and data['type'] == 'error'
+            and 'SERVER_INFO_NOT_FOUND' in data['message']):
         return False
     extract_server_info(server, data)
     return True
@@ -152,6 +154,7 @@ def monitor_server(gp, webhook, server):
                                    .format(server['NAME']), 65280)
                 time.sleep(180)
             except Exception as e:
+                logger.exception(e)
                 send_discord_embed(webhook, 'Restart failed',
                                    'Restart of server\n**{}**\nfailed! Trying again '
                                    'in 10 minutes! Error: {}'
