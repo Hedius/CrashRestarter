@@ -3,6 +3,9 @@ stages:
   - code quality
   - build
 
+code_quality:
+  stage: code quality
+
 flake8:
   stage: code quality
   tags:
