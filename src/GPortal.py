@@ -1,7 +1,7 @@
 __author__ = "Hedius"
 __license__ = "GPLv3"
 
-#  Copyright (C) 2020. Hedius gitlab.com/hedius
+#  Copyright (C) 2023. Hedius gitlab.com/hedius
 #
 #  This program is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
@@ -16,54 +16,81 @@ __license__ = "GPLv3"
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-import sys
-import requests
-import logging as log
+from threading import Lock
+from loguru import logger
+from selenium import webdriver
+from selenium.webdriver.common.by import By
 
+_lock = Lock()
 
 class GPortal:
-    """connector for G-Portal.com"""
+    """
+    connector for G-Portal.com, requires selenium
+    The restarting process is a mutex.
+    """
 
-    def __init__(self, user, pw):
-        """init GPortal
-        :param user: G-Portal.com username/email
-        :param pw: G-Portal.com password
+    def __init__(self, user, pw, remote_selenium):
         """
-        self.user = user
-        self.pw = pw
+        Connector for g-portal.
+        use
+        :param user: G-Portal.com username/email
+        :param pw: G-Portal.com password (2FA HAS TO BE DISABLED!)
+        :param remote_selenium: http://IP:PORT of the remote selenium server (CHROME ONLY!)
+        """
+        self._user = user
+        self._pw = pw
+        self._remote_selenium = remote_selenium
+
+        self._driver = self._init_driver()
+
+    def _init_driver(self) -> webdriver.Remote:
+        """
+        Open a connection to a remote chrome selenium instance.
+        Sets the driver to self._driver
+        :return: driver
+        """
+        chrome_options = webdriver.ChromeOptions()
+        driver = webdriver.Remote(
+            command_executor=f'{self._remote_selenium}/wd/hub',
+            options=chrome_options
+        )
+        driver.implicitly_wait(10)
+        self._driver = driver  # Redundant
+        return driver
+
+    def _check_login(self):
+        """
+        Opens the my server page of g-portal and performs a login if needed.
+        """
+        self._driver.get('https://www.g-portal.com/eur/gamecloud')
+        if 'auth.g-portal.com' not in self._driver.current_url:
+            # Seems like we are authenticated
+            return
+
+        # Perform login
+        logger.info('Authenticating')
+        # Navigate Authentication
+        self._driver.find_element(By.ID, 'username').send_keys(self._user)
+        self._driver.find_element(By.ID, 'password').send_keys(self._pw)
+        self._driver.find_element(By.ID, 'kc-login').click()
+
+        # Click cookie button if needed
+        try:
+            self._driver.find_element(
+                By.CSS_SELECTOR,
+                'div.cf1lHZ:nth-child(1) > button:nth-child(1)'
+            ).click()
+            logger.info('Clicked the cookie button')
+        except:
+            pass
 
     def restart_server(self, restart_url):
-        """restart a G-Portal Battlefield 4 server
-        :param restart_url: restartURL of server
-        :return: True on success
-                  False on failure
         """
-        # login
-        data = {'login': self.user, 'password': self.pw}
-        s = requests.session()
-        # hmm works
-        # not ideal...
-        # login fails with the python user agent?
-        s.headers['User-Agent'] = "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:82.0) Gecko/20100101 Firefox/82.0"
-        r = s.get("https://www.g-portal.com/en/")
-        r = s.get("https://www.g-portal.com/eur/auth/login?redirectAfterLogin=%2F")
-        r = s.post(
-            "https://id2.g-portal.com/login?redirect=https%3A%2F%2Fwww.g-portal.com%2F%3AregionPrefix%2Fauth%2Flogin%3FredirectAfterLogin%3D%252F%26defaultRegion%3DEU",
-            data=data)
-        # success?
-        if "<title>Auth</title>" in r.text:
-            err = "GPortal> Login failed!"
-            log.critical(err)
-            print(err, file=sys.stderr)
-            return False
-        log.debug("GPortal> Login successful!")
-
-        # restart server
-        r = s.get(restart_url)
-        if r.status_code == 200:
-            if r.json()["message"] == "Your gameserver is restarting":
-                log.info("GPortal> Successfully restarted server!")
-                return True
-        log.error("GPortal> Restart failed! Code: {} Error: {}"
-                  .format(r.status_code, r.text))
-        return False
+        Restart a G-Portal Battlefield 4 server
+        :param restart_url: restart URL of server
+        """
+        # Mutex to prevent several threads from doing the same stuff at the same time.
+        # selenium would support multiple sessions but we only use one
+        with _lock:
+            self._check_login()
+            self._driver.get(restart_url)

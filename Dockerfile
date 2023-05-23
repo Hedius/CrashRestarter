@@ -3,12 +3,12 @@
 FROM python:3
 
 # User and Group ID of the account used for execution
-ARG UID=4000
-ARG GID=4000
+ARG UID=4100
+ARG GID=4100
 
-LABEL maintainer="Hedius @ gitlab.com/hedius" \
+LABEL maintainer="Hedius @ github.com/hedius" \
       description="image for E4GLCrashRestarter" \
-      version="1.2.2"
+      version="2.0.0"
 
 # account for execution of script
 RUN groupadd -r -g $GID  pythonRun && \

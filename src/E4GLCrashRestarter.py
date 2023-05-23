@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 
-__author__ = "Hedius"
-__version__ = "1.2.2"
-__license__ = "GPLv3"
+__author__ = 'Hedius'
+__version__ = '2.0.0'
+__license__ = 'GPLv3'
 
 #  Copyright (C) 2020. Hedius gitlab.com/hedius
 #
@@ -25,10 +25,11 @@ import configparser
 import argparse
 import time
 from threading import Thread
-import logging as log
 
 import requests
 from discord_webhook import DiscordWebhook, DiscordEmbed
+from icmplib import ping
+from loguru import logger
 
 from GPortal import GPortal
 
@@ -49,6 +50,49 @@ def send_discord_embed(webhook, title, description, color):
     discord.execute()
 
 
+def check_battlelog(server):
+    """
+    Return False if the server is offline else true
+    :param server: server dict
+    :returns: boolean
+    """
+    url = f'http://battlelog.battlefield.com/bf4/servers/show/pc/{server["GUID"]}/?json=1'
+    r = requests.get(url)
+    data = r.json()
+    if r.status_code > 400 and data['type'] == 'error' and 'SERVER_INFO_NOT_FOUND' in data['message']:
+        return False
+    extract_server_info(server, data)
+    return True
+
+
+def ping_server(address):
+    """
+    Pings the server IP -> only restart if pingable
+    :param address: IP / or DNS
+    :return: True if pingable else False
+    """
+    r = ping(address, count=5, interval=1)
+    return r.is_alive
+
+
+def extract_server_info(server, data):
+    """
+    Extracts and saves the server name in the server Dict.
+    Also saved the server IP in the dict
+    :param server: server config dict
+    :param data: battlelog profile JSON
+    :returns: server name
+    """
+    try:
+        name = data['message']['SERVER_INFO']['name']
+        server['IP'] = data['message']['SERVER_INFO']['ip']
+        if name not in (server['NAME'], server['GUID']):
+            server['NAME'] = name
+    except (KeyError, TypeError):
+        pass
+    return server['NAME']
+
+
 def get_server_status(server):
     """
     Ask Battlelog for the status of the given server
@@ -56,46 +100,19 @@ def get_server_status(server):
     :returns: True if online
               False if stuck/offline
     """
-
-    def check_server():
-        """
-        Return False if the server is offline else true
-        :returns: boolean
-        """
-        url = ("http://battlelog.battlefield.com/bf4/servers/show/pc/{}/?json=1"
-               .format(server["GUID"]))
-        r = requests.get(url)
-        data = r.json()
-        if r.status_code > 400 and data["type"] == "error" and "SERVER_INFO_NOT_FOUND" in data["message"]:
+    # Main Function
+    if check_battlelog(server) is False:
+        logger.warning('Server {} with name/GUID {} is offline! '
+                       'Checking again in 120s!'
+                       .format(server['ID'], server['NAME']))
+        time.sleep(120)
+        if check_battlelog(server) is False:
+            logger.warning('Server {} with name/GUID {} is offline! '
+                           'Restart needed!'
+                           .format(server['ID'], server['NAME']))
             return False
-        extract_server_name(data)
-        return True
-
-    def extract_server_name(data):
-        """
-        Extracts and saves the server name in the server Dict.
-        :returns: server name
-        """
-        try:
-            name = data["message"]["SERVER_INFO"]["name"]
-            if name not in (server["NAME"], server["GUID"]):
-                server["NAME"] = name
-        except (KeyError, TypeError):
-            pass
-        return server["NAME"]
-
-    if check_server() is False:
-        log.warning("Battlelog> Server {} with name/GUID {} is offline! "
-                    "Checking again in 45s!"
-                    .format(server["ID"], server["NAME"]))
-        time.sleep(45)
-        if check_server() is False:
-            log.warning("Battlelog> Server {} with name/GUID {} is offline! "
-                        "Restart needed!"
-                        .format(server["ID"], server["NAME"]))
-            return False
-    log.debug("Battlelog> Server {} with name/guid {} is online"
-              .format(server["ID"], server["NAME"]))
+    logger.debug('Server {} with name/guid {} is online'
+                 .format(server['ID'], server['NAME']))
     return True
 
 
@@ -107,24 +124,38 @@ def monitor_server(gp, webhook, server):
     :param webhook: url
     :param server: datadict of server
     """
-    log.info("Started monitoring for server {}: {}"
-             .format(server["ID"], server["GUID"]))
+    logger.info('Started monitoring for server {}: {}'
+                .format(server['ID'], server['GUID']))
+    # ToDO the colour codes are hardcoded numbers atm. not clean
+    # Too lazy to migrate to f-strings here.
     while True:
         if get_server_status(server) is False:
             # server down - send disc notification
-            send_discord_embed(webhook, "ALARM! Server is down!",
-                               "**{}**".format(server["NAME"]), 16711680)
-            restart = gp.restart_server(server["restartURL"])
-            if restart:
-                send_discord_embed(webhook, "Restarted server",
-                                   "Successfully restarted server\n**{}**."
-                                   .format(server["NAME"]), 65280)
-                # time.sleep(180)
-            else:
-                send_discord_embed(webhook, "Restart failed",
-                                   "Restart of server\n**{}**\nfailed! Trying again "
-                                   "in 10 minutes!"
-                                   .format(server["NAME"]), 16711680)
+            send_discord_embed(webhook, 'ALARM! Server is down!',
+                               '**{}** -'.format(server['NAME']), 16711680)
+
+            # Ping the server -> Only restart if we can ping it
+            if 'IP' in server and not ping_server(server['IP']):
+                # Cannot ping server - skip for now
+                send_discord_embed(webhook, 'Server Ping Failed',
+                                   'Cannot ping offline server \n**{}**\n! Trying again '
+                                   'in 5 minutes!'
+                                   .format(server['NAME']), 16711680)
+                time.sleep(300)
+                continue
+
+            # Trigger a restart
+            try:
+                gp.restart_server(server['restartURL'])
+                send_discord_embed(webhook, 'Restarted server',
+                                   'Successfully restarted server\n**{}**.'
+                                   .format(server['NAME']), 65280)
+                time.sleep(180)
+            except Exception as e:
+                send_discord_embed(webhook, 'Restart failed',
+                                   'Restart of server\n**{}**\nfailed! Trying again '
+                                   'in 10 minutes! Error: {}'
+                                   .format(server['NAME'], e), 16711680)
                 time.sleep(420)  # cooldown after restart
         time.sleep(180)
 
@@ -146,28 +177,6 @@ def start_monitoring(gp, webhook, bf4_servers):
         t.join()
 
 
-def config_logging(log_level):
-    """
-    Configure the logger
-    :param log_level: loglevel as string
-    """
-    log_levels = {
-        'NOTSET': 0,
-        'DEBUG': 10,
-        'INFO': 20,
-        'WARNING': 30,
-        'ERROR': 40,
-        'CRITICAL': 50
-    }
-    if log_level.upper() in log_levels:
-        level = log_levels[log_level.upper()]
-    else:
-        level = 10
-    log.basicConfig(format="%(asctime)s | %(levelname)s | "
-                           "%(funcName)s | %(message)s",
-                    level=level)
-
-
 # Config/Argv
 def read_config(config_file):
     """
@@ -179,64 +188,49 @@ def read_config(config_file):
     """
     # read config
     if not os.path.isfile(config_file):
-        print("Error while accessing config!", file=sys.stderr)
+        print('Error while accessing config!', file=sys.stderr)
         exit(1)
 
     config = configparser.ConfigParser(interpolation=None)
     config.read(config_file)
     # g-portal
-    try:
-        section = config["GPortal"]
-        gp = GPortal(section["user"], section["pw"])
-    except (configparser.Error, KeyError):
-        print("Error while reading G-Portal login data from config!",
-              file=sys.stderr)
-        exit(1)
+    section = config['GPortal']
+    gp = GPortal(section['user'], section['pw'], section['selenium'])
+
     # discord
-    try:
-        section = config["DiscordWebhook"]
-        webhook = section["webhook"]
-    except (configparser.Error, KeyError):
-        print("Error while reading DiscordWebhook from config!",
-              file=sys.stderr)
-        exit(1)
-    # logging
-    try:
-        section = config["Logging"]
-        config_logging(section["loglevel"])
-    except (configparser.Error, KeyError):
-        print("Error while reading Logging from config!", file=sys.stderr)
-        exit(1)
+    section = config['DiscordWebhook']
+    webhook = section['webhook']
+
     # BF4 servers
     bf4_servers = []
     i = 1
     try:
-        while config.has_section("Server" + str(i)):
-            section = config["Server" + str(i)]
+        while config.has_section('Server' + str(i)):
+            section = config['Server' + str(i)]
 
-            if "restart" not in section["restartURL"]:
-                print("Invalid RestarURL for server {}!".format(i))
+            if 'restart' not in section['restartURL']:
+                print('Invalid RestartURL for server {}!'.format(i))
                 exit(1)
 
             new_dict = {
-                "NAME": section["GUID"],
-                "ID": i,
-                "GUID": section["GUID"],
-                "restartURL": section["restartURL"]
+                'NAME': section['GUID'],
+                'ID': i,
+                'GUID': section['GUID'],
+                'restartURL': section['restartURL']
             }
             bf4_servers.append(new_dict)
             i += 1
     except (configparser.Error, KeyError):
-        print("Error while reading BF4 servers from config!", file=sys.stderr)
+        print('Error while reading BF4 servers from config!', file=sys.stderr)
         exit(1)
     return gp, webhook, bf4_servers
 
 
 def main():
-    parser = argparse.ArgumentParser(description="Crash handler for G-Portal "
-                                     "BF4 servers by E4GL")
-    parser.add_argument("-c", "--config", help="path to config file",
-                        required=True, dest="configFile")
+    parser = argparse.ArgumentParser(description='Crash handler for G-Portal '
+                                     'BF4 servers by E4GL')
+    parser.add_argument('-c', '--config', help='path to config file',
+                        required=True, dest='configFile')
     args = parser.parse_args()
 
     gp, webhook, bf4_servers = read_config(args.configFile)
@@ -244,5 +238,5 @@ def main():
     start_monitoring(gp, webhook, bf4_servers)
 
 
-if __name__ == "__main__":
+if __name__ == '__main__':
     main()
