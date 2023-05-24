@@ -9,7 +9,6 @@ ARG GID=4100
 LABEL maintainer="Hedius @ github.com/hedius" \
       description="image for E4GLCrashRestarter" \
       version="2.0.0"
-
 # account for execution of script
 RUN groupadd -r -g $GID  pythonRun && \
     useradd -r -g pythonRun -u $UID pythonRun

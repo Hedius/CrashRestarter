@@ -1,20 +1,22 @@
 version: '2.4'
 services:
-  E4GLCrashRestarter:
-    container_name: E4GLCrashRestarter
-    build:
-      context: .
-      args:
-        UID: 4000
-        GID: 4000
-    image: registry.gitlab.com/e4gl/crashrestarter:1.2.2
-    userns_mode: "host"
+  crashrestart:
+    image: registry.hedservers.com/e4gl/crashrestarter:latest
     restart: unless-stopped
     volumes:
       - type: bind
         source: ./crashrestarter.cfg
         target: /usr/src/app/crashrestarter.cfg
+    cap_add:
+      - NET_ADMIN
     security_opt:
       - no-new-privileges
     mem_limit: 500M
     mem_reservation: 400M
+  selenium:
+    image: selenium/standalone-chrome:latest
+    environment:
+      HUB_HOST: selenium
+      HUB_PORT: 4444
+    mem_limit: 2G
+    mem_reservation: 1G

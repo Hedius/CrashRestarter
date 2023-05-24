@@ -42,6 +42,7 @@ def send_discord_embed(webhook, title, description, color):
     :param description: content of msg
     :param color: color of msg
     """
+    logger.info(f'{title}: {description}')
     if not webhook or len(webhook) == 0:
         return
     discord = DiscordWebhook(url=webhook)
@@ -131,16 +132,17 @@ def monitor_server(gp, webhook, server):
     # ToDO the colour codes are hardcoded numbers atm. not clean
     # Too lazy to migrate to f-strings here.
     while True:
+        server['IP'] = '10.190.1.1'
         if get_server_status(server) is False:
             # server down - send disc notification
             send_discord_embed(webhook, 'ALARM! Server is down!',
-                               '**{}** -'.format(server['NAME']), 16711680)
+                               '**{}**'.format(server['NAME']), 16711680)
 
             # Ping the server -> Only restart if we can ping it
             if 'IP' in server and not ping_server(server['IP']):
                 # Cannot ping server - skip for now
                 send_discord_embed(webhook, 'Server Ping Failed',
-                                   'Cannot ping offline server \n**{}**\n! Trying again '
+                                   'Cannot ping offline server\n**{}**\n! Trying again '
                                    'in 5 minutes!'
                                    .format(server['NAME']), 16711680)
                 time.sleep(300)
@@ -160,6 +162,8 @@ def monitor_server(gp, webhook, server):
                                    'in 10 minutes! Error: {}'
                                    .format(server['NAME'], e), 16711680)
                 time.sleep(420)  # cooldown after restart
+            finally:
+                gp.close_driver()
         time.sleep(180)
 
 

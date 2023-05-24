@@ -1,14 +1,12 @@
 [GPortal]
 user=
 pw=
+# Do not change this if you use the supplied compose
+selenium=http://selenium:4444
 
 # optional - leave it empty if you do not want to use discord notifications
 [DiscordWebhook]
 webhook=
-
-[Logging]
-# Debug, Info, Warning, Error, Critical
-loglevel=Info
 
 # create a section for each server
 [Server1]

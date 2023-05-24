@@ -19,6 +19,8 @@ Copy the example config to crashrestarter.cfg and edit it.
 [GPortal]
 user=
 pw=
+# Do not change this if you use the supplied compose
+selenium=http://selenium:4444
 
 # optional - leave it empty if you do not want to use discord notifications
 [DiscordWebhook]
@@ -44,16 +46,7 @@ restartURL=
     1. leave the webhook setting empty if you do not want to use it
  3. make docker
  
- ### Directly on machine
- 2. Install the requirements with `make install`
- 3. copy crashrestarter.cfg.example to crashrestarter.cfg and edit it
-    1. leave the webhook setting empty if you do not want to use it
- 4. Start the script: `make start`
 
 ## Updating
  ### docker-compose
  `make update-docker`
-
- ### Directly on machine
- 1. End the script
- 2. Update and start it again with `make start`
