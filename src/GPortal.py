@@ -54,7 +54,10 @@ class GPortal:
         """
         chrome_options = webdriver.ChromeOptions()
         chrome_options.add_argument(
-            '/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/113.0.0.0 Safari/537.36')
+            '/5.0 (Windows NT 10.0; Win64; x64) '
+            'AppleWebKit/537.36 (KHTML, like Gecko) '
+            'Chrome/113.0.0.0 Safari/537.36'
+        )
         driver = webdriver.Remote(
             command_executor=f'{self._remote_selenium}/wd/hub',
             options=chrome_options
@@ -111,9 +114,3 @@ class GPortal:
             if not self._driver.current_url.endswith('restartService'):
                 # we are on a different page!
                 raise RuntimeError('LOGIN FAILED!!! = RESTART FAILED!')
-
-
-if __name__ == '__main__':
-    gp = GPortal(user='A', pw='x', remote_selenium='http://127.0.0.1:4444')
-    gp.restart_server('https://www.g-portal.com/eur/server/bf4/4973584/restartService')
-    print(gp)
