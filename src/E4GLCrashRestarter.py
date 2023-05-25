@@ -180,6 +180,8 @@ def start_monitoring(gp, webhook, bf4_servers):
         new_thread.daemon = True
         threads.append(new_thread)
         new_thread.start()
+        # Sleep a little to not send all requests at the same time
+        time.sleep(5)
     for t in threads:
         t.join()
 
