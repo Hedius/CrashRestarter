@@ -132,7 +132,6 @@ def monitor_server(gp, webhook, server):
     # ToDO the colour codes are hardcoded numbers atm. not clean
     # Too lazy to migrate to f-strings here.
     while True:
-        server['IP'] = '10.190.1.1'
         if get_server_status(server) is False:
             # server down - send disc notification
             send_discord_embed(webhook, 'ALARM! Server is down!',
