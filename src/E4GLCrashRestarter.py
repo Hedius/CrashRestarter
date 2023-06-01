@@ -74,7 +74,7 @@ def ping_server(address):
     :param address: IP / or DNS
     :return: True if pingable else False
     """
-    r = ping(address, count=5, interval=1)
+    r = ping(address, count=5, interval=1, privileged=False)
     return r.is_alive
 
 
