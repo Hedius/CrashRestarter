@@ -141,7 +141,7 @@ def monitor_server(gp, webhook, server):
             if 'IP' in server and not ping_server(server['IP']):
                 # Cannot ping server - skip for now
                 send_discord_embed(webhook, 'Server Ping Failed',
-                                   'Cannot ping offline server\n**{}**\n! Trying again '
+                                   'Cannot ping offline server **{}**! Trying again '
                                    'in 5 minutes!'
                                    .format(server['NAME']), 16711680)
                 time.sleep(300)
@@ -151,13 +151,13 @@ def monitor_server(gp, webhook, server):
             try:
                 gp.restart_server(server['restartURL'])
                 send_discord_embed(webhook, 'Restarted server',
-                                   'Successfully restarted server\n**{}**.'
+                                   'Successfully restarted server **{}**.'
                                    .format(server['NAME']), 65280)
                 time.sleep(180)
             except Exception as e:
                 logger.exception(e)
                 send_discord_embed(webhook, 'Restart failed',
-                                   'Restart of server\n**{}**\nfailed! Trying again '
+                                   'Restart of server **{}** failed! Trying again '
                                    'in 10 minutes! Error: {}'
                                    .format(server['NAME'], e), 16711680)
                 time.sleep(420)  # cooldown after restart
