@@ -1,7 +1,7 @@
 __author__ = "Hedius"
 __license__ = "GPLv3"
 
-from datetime import datetime
+from datetime import datetime, timedelta
 #  Copyright (C) 2023. Hedius gitlab.com/hedius
 #
 #  This program is free software: you can redistribute it and/or modify
@@ -72,8 +72,15 @@ class GPortal:
     def close_driver(self):
         if not self._driver:
             return
-        self._driver.quit()
-        self._driver = None
+        with self._lock:
+            if (datetime.now() - self._driver_created) <= timedelta(minutes=5):
+                return
+            # test if the driver is still working
+            try:
+                self._driver.quit()
+            except Exception as e:
+                logger.critical(f'Failed to close driver!: {e}')
+            self._driver = None
 
     def _check_login(self):
         """

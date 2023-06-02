@@ -161,8 +161,8 @@ def monitor_server(gp, webhook, server):
                                    'in 10 minutes! Error: {}'
                                    .format(server['NAME'], e), 16711680)
                 time.sleep(420)  # cooldown after restart
-            finally:
-                gp.close_driver()
+
+        gp.close_driver()
         time.sleep(180)
 
 
