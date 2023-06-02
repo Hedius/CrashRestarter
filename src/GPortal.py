@@ -1,6 +1,7 @@
 __author__ = "Hedius"
 __license__ = "GPLv3"
 
+from datetime import datetime
 #  Copyright (C) 2023. Hedius gitlab.com/hedius
 #
 #  This program is free software: you can redistribute it and/or modify
@@ -45,6 +46,7 @@ class GPortal:
         self._lock = Lock()
 
         self._driver: Optional[webdriver.Remote] = None
+        self._driver_created = datetime.now()
 
     def _init_driver(self) -> webdriver.Remote:
         """
@@ -64,6 +66,7 @@ class GPortal:
         )
         driver.implicitly_wait(10)
         self._driver = driver  # Redundant
+        self._driver_created = datetime.now()
         return driver
 
     def close_driver(self):
