@@ -74,7 +74,7 @@ def ping_server(address):
     :param address: IP / or DNS
     :return: True if pingable else False
     """
-    r = ping(address, count=5, interval=1, privileged=False)
+    r = ping(address, count=5, interval=1, privileged=False, payload_size=32)
     return r.is_alive
 
 
@@ -131,21 +131,25 @@ def monitor_server(gp, webhook, server):
                 .format(server['ID'], server['GUID']))
     # ToDO the colour codes are hardcoded numbers atm. not clean
     # Too lazy to migrate to f-strings here.
+    notification_sent = False
     while True:
         if get_server_status(server) is False:
             # server down - send disc notification
-            send_discord_embed(webhook, 'ALARM! Server is down!',
-                               '**{}**'.format(server['NAME']), 16711680)
-
             # Ping the server -> Only restart if we can ping it
             if 'IP' in server and not ping_server(server['IP']):
                 # Cannot ping server - skip for now
-                send_discord_embed(webhook, 'Server Ping Failed',
-                                   'Cannot ping offline server **{}**! Trying again '
-                                   'in 5 minutes!'
-                                   .format(server['NAME']), 16711680)
+                if not notification_sent:
+                    send_discord_embed(webhook, 'Server Ping Failed',
+                                       'Cannot ping offline server **{}**! Trying again '
+                                       'in 5 minutes!'
+                                       .format(server['NAME']), 16711680)
                 time.sleep(300)
+                notification_sent = True
                 continue
+            else:
+                send_discord_embed(webhook, 'ALARM! Server is down!',
+                                   '**{}**'.format(server['NAME']), 16711680)
+            notification_sent = False
 
             # Trigger a restart
             try:
