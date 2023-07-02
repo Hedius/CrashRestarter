@@ -1,7 +1,7 @@
 version: '2.4'
 services:
   crashrestart:
-    image: registry.hedservers.com/e4gl/crashrestarter:latest
+    image: hedius/crashrestarter:latest
     restart: unless-stopped
     volumes:
       - type: bind
