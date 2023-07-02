@@ -57,8 +57,16 @@ def check_battlelog(server):
     :param server: server dict
     :returns: boolean
     """
+    # Dirty Hack for support for battlelog proxies
+    proxy = os.getenv('BATTLELOG_PROXY')
+    proxies = None
+    if proxy:
+        proxies = {
+            'http': proxy,
+            'https': proxy,
+        }
     url = f'http://battlelog.battlefield.com/bf4/servers/show/pc/{server["GUID"]}/?json=1'
-    r = requests.get(url)
+    r = requests.get(url, proxies=proxies)
     data = r.json()
     if (r.status_code > 400
             and data['type'] == 'error'
