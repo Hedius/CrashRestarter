@@ -67,7 +67,13 @@ def check_battlelog(server):
         }
     url = f'http://battlelog.battlefield.com/bf4/servers/show/pc/{server["GUID"]}/?json=1'
     r = requests.get(url, proxies=proxies)
-    data = r.json()
+    try:
+        data = r.json()
+    except requests.exceptions.JSONDecodeError:
+        # Assume that the connection failed / battlelog is broken partly...
+        # And return online....
+        # False might be a little dangerous here
+        return True
     if (r.status_code > 400
             and data['type'] == 'error'
             and 'SERVER_INFO_NOT_FOUND' in data['message']):
