@@ -221,7 +221,8 @@ def read_config(config_file):
     config.read(config_file)
     # g-portal
     section = config['GPortal']
-    gp = GPortal(section['user'], section['pw'], section['selenium'])
+    gp = GPortal(section['selenium'], section['user'], section['pw'],
+                 config['Fragnet']['user'], config['Fragnet']['pw'])
 
     # discord
     section = config['DiscordWebhook']
@@ -242,7 +243,8 @@ def read_config(config_file):
                 'NAME': section['GUID'],
                 'ID': i,
                 'GUID': section['GUID'],
-                'restartURL': section['restartURL']
+                'restartURL': section.get('restartURL'),
+                'serviceID': section.get('serviceID')
             }
             bf4_servers.append(new_dict)
             i += 1

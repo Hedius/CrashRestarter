@@ -4,6 +4,10 @@ pw=
 # Do not change this if you use the supplied compose
 selenium=http://selenium:4444
 
+[Fragnet]
+user=
+pw=
+
 # optional - leave it empty if you do not want to use discord notifications
 [DiscordWebhook]
 webhook=
@@ -11,7 +15,11 @@ webhook=
 # create a section for each server
 [Server1]
 GUID=
+# For g-portal
 restartURL=https://www.g-portal.com/eur/server/bf4/xxxx/restartService
+# For Fragnet. https://gamepanel.fragnet.net/Service/Home/X
+serviceID=X
+# One of both is required.
 
 # [Server2]
 # GUID=
