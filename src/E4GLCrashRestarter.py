@@ -238,7 +238,8 @@ def read_config(config_file):
         while config.has_section('Server' + str(i)):
             section = config['Server' + str(i)]
 
-            if 'restart' not in section['restartURL']:
+            if ('restart' not in section['restartURL']
+                    and section['restartURL'] not in (None, '')):
                 print('Invalid RestartURL for server {}!'.format(i))
                 exit(1)
 
