@@ -134,20 +134,22 @@ class GPortal:
             if not self._driver:
                 self._init_driver()
 
-        self._driver.get('https://gamepanel.fragnet.net/')
-        self._driver.find_element(By.ID, 'UserName').send_keys(
-            self._fragnet_user)
-        self._driver.find_element(By.ID, 'Password').send_keys(
-            self._fragnet_pw)
-        self._driver.find_element(By.ID, 'loginButton').click()
+            self._driver.get('https://gamepanel.fragnet.net/')
+            self._driver.find_element(By.ID, 'UserName').send_keys(
+                self._fragnet_user)
+            self._driver.find_element(By.ID, 'Password').send_keys(
+                self._fragnet_pw)
+            self._driver.find_element(By.ID, 'loginButton').click()
 
-        if (f'{self._fragnet_user.lower()} home'
-                not in self._driver.page_source.lower()):
-            raise RuntimeError('Login to Fragnet failed!')
+            if (f'{self._fragnet_user.lower()} home'
+                    not in self._driver.page_source.lower()):
+                raise RuntimeError('Login to Fragnet failed!')
 
-        self._driver.get(
-            f'https://gamepanel.fragnet.net/Service/Home/{service_id}'
-        )
-        # Restart it :)
-        self._driver.find_element(By.CSS_SELECTOR,
-                                  '.orange-button').click()
+            self._driver.get(
+                f'https://gamepanel.fragnet.net/Service/Home/{service_id}'
+            )
+            # Restart it :)
+            self._driver.find_element(By.CSS_SELECTOR,
+                                      '.orange-button').click()
+
+            self.close_driver()
