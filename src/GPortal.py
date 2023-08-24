@@ -151,4 +151,3 @@ class GPortal:
         # Restart it :)
         self._driver.find_element(By.CSS_SELECTOR,
                                   '.orange-button').click()
-
