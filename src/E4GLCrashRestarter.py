@@ -133,7 +133,7 @@ def get_server_status(server):
     return True
 
 
-def monitor_server(gp, webhook, server):
+def monitor_server(gp: GPortal, webhook, server):
     """
     Check the status of a server every 5 minutes and restarts the server if
     it is down.
@@ -167,7 +167,10 @@ def monitor_server(gp, webhook, server):
 
             # Trigger a restart
             try:
-                gp.restart_server(server['restartURL'])
+                if server['restartURL'] not in ('', None):
+                    gp.restart_server(server['restartURL'])
+                else:
+                    gp.restart_fragnet_server(server['serviceID'])
                 send_discord_embed(webhook, 'Restarted server',
                                    'Successfully restarted server **{}**.'
                                    .format(server['NAME']), 65280)
