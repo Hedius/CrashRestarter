@@ -31,16 +31,20 @@ class GPortal:
     The restarting process is a mutex.
     """
 
-    def __init__(self, user, pw, remote_selenium):
+    def __init__(self, remote_selenium,
+                 gp_user=None, gp_pw=None,
+                 fragnet_user=None, fragnet_pw=None):
         """
         Connector for g-portal.
         use
-        :param user: G-Portal.com username/email
-        :param pw: G-Portal.com password (2FA HAS TO BE DISABLED!)
+        :param gp_user: G-Portal.com username/email
+        :param gp_pw: G-Portal.com password (2FA HAS TO BE DISABLED!)
         :param remote_selenium: http://IP:PORT of the remote selenium server (CHROME ONLY!)
         """
-        self._user = user
-        self._pw = pw
+        self._gp_user = gp_user
+        self._gp_pw = gp_pw
+        self._fragnet_user = fragnet_user
+        self._fragnet_pw = fragnet_pw
         self._remote_selenium = remote_selenium
 
         self._lock = Lock()
@@ -94,8 +98,8 @@ class GPortal:
         # Perform login
         logger.info('Authenticating')
         # Navigate Authentication
-        self._driver.find_element(By.ID, 'username').send_keys(self._user)
-        self._driver.find_element(By.ID, 'password').send_keys(self._pw)
+        self._driver.find_element(By.ID, 'username').send_keys(self._gp_user)
+        self._driver.find_element(By.ID, 'password').send_keys(self._gp_pw)
         self._driver.find_element(By.ID, 'kc-login').click()
 
         # Click cookie button if needed
@@ -124,3 +128,27 @@ class GPortal:
             if not self._driver.current_url.endswith('restartService'):
                 # we are on a different page!
                 raise RuntimeError('LOGIN FAILED!!! = RESTART FAILED!')
+
+    def restart_fragnet_server(self, service_id):
+        with self._lock:
+            if not self._driver:
+                self._init_driver()
+
+        self._driver.get('https://gamepanel.fragnet.net/')
+        self._driver.find_element(By.ID, 'UserName').send_keys(
+            self._fragnet_user)
+        self._driver.find_element(By.ID, 'Password').send_keys(
+            self._fragnet_pw)
+        self._driver.find_element(By.ID, 'loginButton').click()
+
+        if (f'{self._fragnet_user.lower()} home'
+                not in self._driver.page_source.lower()):
+            raise RuntimeError('Login to Fragnet failed!')
+
+        self._driver.get(
+            f'https://gamepanel.fragnet.net/Service/Home/{service_id}'
+        )
+        # Restart it :)
+        self._driver.find_element(By.CSS_SELECTOR,
+                                  '.orange-button').click()
+
