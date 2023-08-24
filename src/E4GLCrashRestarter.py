@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
 
 __author__ = 'Hedius'
-__version__ = '2.0.0'
+__version__ = '2.1.0'
 __license__ = 'GPLv3'
 
-#  Copyright (C) 2020. Hedius gitlab.com/hedius
+#  Copyright (C) 2023. Hedius gitlab.com/hedius
 #
 #  This program is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by

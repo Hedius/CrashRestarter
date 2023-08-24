@@ -1,5 +1,5 @@
 # E4GL Crash Restarter
-The E4GL Crash Restarter docker image allows you to monitor G-Portal.com BF4 servers and restarts them if needed.
+The E4GL Crash Restarter docker image allows you to monitor G-Portal.com and/or Fragnet/XLGames BF4 servers and restarts them if needed.
 
 ## Features
 - restart servers if needed (crashes)
@@ -22,6 +22,10 @@ pw=
 # Do not change this if you use the supplied compose
 selenium=http://selenium:4444
 
+[Fragnet]
+user=
+pw=
+
 # optional - leave it empty if you do not want to use discord notifications
 [DiscordWebhook]
 webhook=
@@ -33,7 +37,11 @@ loglevel=Debug
 # create a section for each server
 [Server1]
 GUID=
-restartURL=
+# For g-portal
+restartURL=https://www.g-portal.com/eur/server/bf4/xxxx/restartService
+# For Fragnet. https://gamepanel.fragnet.net/Service/Home/X
+serviceID=X
+# One of both is required.
 
 # [Server2]
 # GUID=
