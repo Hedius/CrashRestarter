@@ -153,18 +153,18 @@ def monitor_server(gp: GPortal, webhook, server):
                 # Ping the server -> Only restart if we can ping it
                 if 'IP' in server and not ping_server(server['IP']):
                     # Cannot ping server - skip for now
+                    msg = f'Cannot ping offline server **{server["NAME"]}**! Trying again in 5 minutes!'
                     if not notification_sent:
-                        send_discord_embed(webhook, 'Server Ping Failed',
-                                           'Cannot ping offline server **{}**! Trying again '
-                                           'in 5 minutes!'
-                                           .format(server['NAME']), 16711680)
+                        send_discord_embed(webhook, 'Server Ping Failed', msg, 16711680)
+                    logger.warning(msg)
                     time.sleep(300)
                     notification_sent = True
                     continue
                 else:
-                    send_discord_embed(webhook, 'ALARM! Server is down!',
-                                       '**{}**'.format(server['NAME']), 16711680)
+                    msg = f'**{server["NAME"]}** is down! Trying to restart!'
+                    send_discord_embed(webhook, 'ALARM! Server is down!', msg, 16711680)
                 notification_sent = False
+                logger.warning(msg)
 
                 # Trigger a restart
                 try:
@@ -172,17 +172,16 @@ def monitor_server(gp: GPortal, webhook, server):
                         gp.restart_server(server['restartURL'])
                     else:
                         gp.restart_fragnet_server(server['serviceID'])
-                    send_discord_embed(webhook, 'Restarted server',
-                                       'Successfully restarted server **{}**.'
-                                       .format(server['NAME']), 65280)
+                        msg = f'Successfully restarted server **{server["NAME"]}**.'
+                    logger.info(msg)
+                    send_discord_embed(webhook, 'Restarted server',msg, 65280)
                     time.sleep(180)
                 except Exception as e:
+                    msg = f'Restart of server **{server["NAME"]}** failed! Trying again in 10 minutes! Error: {e}'
+                    logger.critical(msg)
                     logger.exception(e)
-                    send_discord_embed(webhook, 'Restart failed',
-                                       'Restart of server **{}** failed! Trying again '
-                                       'in 10 minutes! Error: {}'
-                                       .format(server['NAME'], e), 16711680)
-                    time.sleep(420)  # cooldown after restart
+                    send_discord_embed(webhook, 'Restart failed', msg, 16711680)
+                    time.sleep(600)  # cooldown after restart
 
             gp.close_driver()
         except Exception as e:
