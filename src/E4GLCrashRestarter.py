@@ -88,7 +88,7 @@ def ping_server(address):
     :param address: IP / or DNS
     :return: True if pingable else False
     """
-    r = ping(address, count=5, interval=1, privileged=False, payload_size=32)
+    r = ping(address, count=5, privileged=False, payload_size=32)
     return r.is_alive
 
 
@@ -153,7 +153,8 @@ def monitor_server(gp: GPortal, webhook, server):
                 # Ping the server -> Only restart if we can ping it
                 if 'IP' in server and not ping_server(server['IP']):
                     # Cannot ping server - skip for now
-                    msg = f'Cannot ping offline server **{server["NAME"]}**! Trying again in 5 minutes!'
+                    msg = (f'Cannot ping offline server **{server["NAME"]}**! '
+                           'Trying again in 5 minutes!')
                     if not notification_sent:
                         send_discord_embed(webhook, 'Server Ping Failed', msg, 16711680)
                     logger.warning(msg)
@@ -174,10 +175,11 @@ def monitor_server(gp: GPortal, webhook, server):
                         gp.restart_fragnet_server(server['serviceID'])
                         msg = f'Successfully restarted server **{server["NAME"]}**.'
                     logger.info(msg)
-                    send_discord_embed(webhook, 'Restarted server',msg, 65280)
+                    send_discord_embed(webhook, 'Restarted server', msg, 65280)
                     time.sleep(180)
                 except Exception as e:
-                    msg = f'Restart of server **{server["NAME"]}** failed! Trying again in 10 minutes! Error: {e}'
+                    msg = (f'Restart of server **{server["NAME"]}** failed! '
+                           f'Trying again in 10 minutes! Error: {e}')
                     logger.critical(msg)
                     logger.exception(e)
                     send_discord_embed(webhook, 'Restart failed', msg, 16711680)
