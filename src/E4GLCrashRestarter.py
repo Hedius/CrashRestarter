@@ -19,15 +19,15 @@ __license__ = 'GPLv3'
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-import sys
-import os
-import configparser
 import argparse
+import configparser
+import os
+import sys
 import time
 from threading import Thread
 
 import requests
-from discord_webhook import DiscordWebhook, DiscordEmbed
+from discord_webhook import DiscordEmbed, DiscordWebhook
 from icmplib import ping
 from loguru import logger
 
@@ -147,44 +147,48 @@ def monitor_server(gp: GPortal, webhook, server):
     # Too lazy to migrate to f-strings here.
     notification_sent = False
     while True:
-        if get_server_status(server) is False:
-            # server down - send disc notification
-            # Ping the server -> Only restart if we can ping it
-            if 'IP' in server and not ping_server(server['IP']):
-                # Cannot ping server - skip for now
-                if not notification_sent:
-                    send_discord_embed(webhook, 'Server Ping Failed',
-                                       'Cannot ping offline server **{}**! Trying again '
-                                       'in 5 minutes!'
-                                       .format(server['NAME']), 16711680)
-                time.sleep(300)
-                notification_sent = True
-                continue
-            else:
-                send_discord_embed(webhook, 'ALARM! Server is down!',
-                                   '**{}**'.format(server['NAME']), 16711680)
-            notification_sent = False
-
-            # Trigger a restart
-            try:
-                if server['restartURL'] not in ('', None):
-                    gp.restart_server(server['restartURL'])
+        try:
+            if get_server_status(server) is False:
+                # server down - send disc notification
+                # Ping the server -> Only restart if we can ping it
+                if 'IP' in server and not ping_server(server['IP']):
+                    # Cannot ping server - skip for now
+                    if not notification_sent:
+                        send_discord_embed(webhook, 'Server Ping Failed',
+                                           'Cannot ping offline server **{}**! Trying again '
+                                           'in 5 minutes!'
+                                           .format(server['NAME']), 16711680)
+                    time.sleep(300)
+                    notification_sent = True
+                    continue
                 else:
-                    gp.restart_fragnet_server(server['serviceID'])
-                send_discord_embed(webhook, 'Restarted server',
-                                   'Successfully restarted server **{}**.'
-                                   .format(server['NAME']), 65280)
-                time.sleep(180)
-            except Exception as e:
-                logger.exception(e)
-                send_discord_embed(webhook, 'Restart failed',
-                                   'Restart of server **{}** failed! Trying again '
-                                   'in 10 minutes! Error: {}'
-                                   .format(server['NAME'], e), 16711680)
-                time.sleep(420)  # cooldown after restart
+                    send_discord_embed(webhook, 'ALARM! Server is down!',
+                                       '**{}**'.format(server['NAME']), 16711680)
+                notification_sent = False
 
-        gp.close_driver()
-        time.sleep(180)
+                # Trigger a restart
+                try:
+                    if server['restartURL'] not in ('', None):
+                        gp.restart_server(server['restartURL'])
+                    else:
+                        gp.restart_fragnet_server(server['serviceID'])
+                    send_discord_embed(webhook, 'Restarted server',
+                                       'Successfully restarted server **{}**.'
+                                       .format(server['NAME']), 65280)
+                    time.sleep(180)
+                except Exception as e:
+                    logger.exception(e)
+                    send_discord_embed(webhook, 'Restart failed',
+                                       'Restart of server **{}** failed! Trying again '
+                                       'in 10 minutes! Error: {}'
+                                       .format(server['NAME'], e), 16711680)
+                    time.sleep(420)  # cooldown after restart
+
+            gp.close_driver()
+        except Exception as e:
+            logger.exception(e)
+        finally:
+            time.sleep(180)
 
 
 def start_monitoring(gp, webhook, bf4_servers):
@@ -260,7 +264,7 @@ def read_config(config_file):
 
 def main():
     parser = argparse.ArgumentParser(description='Crash handler for G-Portal '
-                                     'BF4 servers by E4GL')
+                                                 'BF4 servers by E4GL')
     parser.add_argument('-c', '--config', help='path to config file',
                         required=True, dest='configFile')
     args = parser.parse_args()
