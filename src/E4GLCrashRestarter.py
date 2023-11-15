@@ -173,7 +173,7 @@ def monitor_server(gp: GPortal, webhook, server):
                         gp.restart_server(server['restartURL'])
                     else:
                         gp.restart_fragnet_server(server['serviceID'])
-                        msg = f'Successfully restarted server **{server["NAME"]}**.'
+                    msg = f'Successfully restarted server **{server["NAME"]}**.'
                     logger.info(msg)
                     send_discord_embed(webhook, 'Restarted server', msg, 65280)
                     time.sleep(180)
